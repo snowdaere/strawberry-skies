@@ -1,14 +1,18 @@
+# import libraries
 import pygame as g
 import math
-from dotmap import DotMap
 import numpy as np
 import random as r
 
+# import modules
+import Camera
+import Colors
+
 
 class Body:
-    def __init__(self, x, y, mass, color) -> None:
+    def __init__(self, pos: np.ndarray, velocity: np.ndarray, mass, color) -> None:
         # position in the game world
-        self.pos = self.x, self.y = np.array((x, y))
+        self.pos = pos
         # mass (for physics)
         self.mass = mass
         # radius of planet
@@ -17,14 +21,16 @@ class Body:
 
         self.color = color
         
-        
-        
-
     def render(self):
         # radius to be drawn on the screen
-        rendersize = camzoom*(self.radius)
+        rendersize = Camera.camzoom*(self.radius)
         g.draw.circle(display, self.color, world2render(self.pos), rendersize)
 
+class Star(Body):
+    pass
+
+class Planet(Body):
+    pass        
 
 class Ship:
     def __init__(self, x, y) -> None:
@@ -34,85 +40,32 @@ class Ship:
         self.acc = 0, 0
 
 
-
-
-
-## GENERAL GAME ESTABLISHMENT
-# define game variables
-dim = width, height = np.array((800, 800))
-# the center vector points from the corner of the screen to the middle
-center = np.array((width/2, height/2))
-
-
-
-
-
-## CAMERA CODE
-# initialize the camera settings
-# is the scale setting, or how many display pixels make a game unit
-camzoomdefault = 100
-camzoom = camzoomdefault
-campos = camx, camy = np.array((0, 4))
-
-# this object is used to flip the screen coordinates to a standard x/y orientation
-flip1 = np.array((1, -1))
-flip2 = np.array((-1, 1))
-
-# Says whether the game is panning or not (to update the campos)
-Panning = False
-# dummy variable used for holding offset while panning
-PanStartPos = np.array((0, 0))
-CamPosStart = np.array((0, 0))
-CamPosOffset = np.array((0, 0))
-
-# Says what screen the game is in
-MainScreen = True
-Paused = False
-
-# Color Palette
-colors = DotMap({
-    'black': (13, 1, 6),
-    'brown': (97, 80, 85),
-    'red': (211, 59, 105),
-    'salmon': (232, 236, 115),
-    'orange': (255, 180, 139),
-    'yellow': (243, 223, 162),
-    'green': (77, 204, 189),
-    'blue': (87, 142, 255),
-    'purple': (126, 111, 255),
-})
-
-planetcolors = [colors.red, colors.salmon, colors.orange, colors.yellow, colors.green, colors.blue, colors.purple]
-
 def zoomout():
-    global camzoom
-    if camzoom > 0.0625*camzoomdefault:
-        camzoom *= 0.5
+    if Camera.camzoom > 0.0625*Camera.camzoomdefault:
+        Camera.camzoom *= 0.5
 
 def zoomin():
-    global camzoom
-    if camzoom < 4*camzoomdefault:
-        camzoom *= 2
+    if Camera.camzoom < 4*Camera.camzoomdefault:
+        Camera.camzoom *= 2
 
 def mouse():
     return np.array(g.mouse.get_pos())
 
 def render2world(renderpos:np.array):
     '''Transforms camera coordinates to in-world coordinates'''
-    return flip1*((1/camzoom)*(renderpos - center) - flip2*campos)
+    return Camera.flip1*((1/Camera.camzoom)*(renderpos - center) - Camera.flip2*Camera.campos)
 
 def world2render(worldpos:np.array):
     '''Transforms in-world coordinates to camera coordinates'''
-    return center + camzoom*(flip2*campos + flip1*worldpos)
+    return center + Camera.camzoom*(Camera.flip2*Camera.campos + Camera.flip1*worldpos)
 
 def render():
     if MainScreen:
-        global Panning, campos
         # Handle Game States
 
 
         # draw background
-        display.fill(colors.black)
+        display.fill(Colors.black)
 
         for body in bodies:
             body.render()
@@ -125,19 +78,9 @@ def render():
     elif Paused:
         pass
 
-    
-
-## GAME WORLD
-bodies = [Body(0, 0, 1, colors.red), Body(2, 2, 2, colors.blue), Body(0, 4, 0.5, colors.green)]
-# make lots of planets
-for i in range(100):
-    bodies.append(Body(r.randrange(-40, 40), r.randrange(-40, 40), r.randrange(1, 3), r.choice(planetcolors)))
-
-
 
 ## GAME FUNCTIONS
 def handle(event:g.event):
-    global Panning, Paused, PanStartPos, CamPosStart, running, campos, CamPosOffset
     '''Handle events and stuff'''
     
     if event.type == g.QUIT:
@@ -160,9 +103,9 @@ def handle(event:g.event):
             # implement panning with the right mouse button
             # set camera position to the current mouse location
             print('you right clicked')
-            Panning = True
-            CamPosStart = campos
-            CamPosOffset = campos - render2world(mouse())
+            Camera.Panning = True
+            Camera.CamPosStart = Camera.campos
+            Camera.CamPosOffset = Camera.campos - render2world(mouse())
 
     if event.type == g.MOUSEBUTTONUP:
         if event.button == 1:
@@ -171,11 +114,11 @@ def handle(event:g.event):
             # implement panning with the right mouse button
             # set camera position to the current mouse location
             print('you right unclicked')
-            Panning = False
+            Camera.Panning = False
 
     if event.type == g.MOUSEMOTION:
-        if Panning:
-            campos = CamPosStart - (-campos + render2world(mouse())) - CamPosOffset
+        if Camera.Panning:
+            Camera.campos = Camera.CamPosStart - (-Camera.campos + render2world(mouse())) - Camera.CamPosOffset
 
     # handle key presses
     if event.type == g.KEYDOWN:
@@ -189,7 +132,12 @@ def handle(event:g.event):
                 print('Game Unpaused')
 
             
-            
+def update():
+    if not GameState.Paused:
+        # update the game system
+        pass
+    else:
+        pass
         
 
 
@@ -197,20 +145,61 @@ def main():
     '''do the game stuff'''
     for event in g.event.get():
         handle(event)
+    
+    update()
 
     render()
     clock.tick(FPS)
 
 
+class GameState:
+    # Says what screen the game is in
+    MainScreen = True
+    Paused = False
+
+    FPS = 60
+    running = True
+    dt = 1/FPS
+
+    # Define universal constants
+    # gravitational constant
+    G = 1
+
+
+
+
+
+
 if __name__ == '__main__':
+    # initialize basic stuff
+    ## GENERAL GAME ESTABLISHMENT
+    # define game variables
+    dim = width, height = np.array((800, 800))
+    # the center vector points from the corner of the screen to the middle
+    center = np.array((width/2, height/2))
+
+
+    # Says what screen the game is in
+    MainScreen = True
+    Paused = False
+
+    
     # initialize the game stuff
     display = g.display.set_mode(dim)
     g.display.set_caption('Strawberry Skies')
     clock = g.time.Clock()
-    display.fill(colors.black)
+    display.fill(Colors.black)
     
     FPS = 60
     running = True
+
+
+    # Create the world to be rendered
+    ## GAME WORLD
+    bodies = [Body(np.array((0, 0)), 1, 1, Colors.red), Body(np.array((2, 2)), 2, 2, Colors.blue), Body(np.array((0, 4)), 4, 0.5, Colors.green)]
+    # make lots of planets
+    #for i in range(100):
+    #    bodies.append(Body(np.array(r.randrange(-40, 40), r.randrange(-40, 40)), r.randrange(1, 3), r.choice(planetcolors)))
 
 
     while running:
