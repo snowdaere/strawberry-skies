@@ -23,7 +23,7 @@ class Body:
     def render(self):
         # radius to be drawn on the screen
         rendersize = camzoom*(self.radius)
-        g.draw.circle(display, self.color, center + camzoom*(flip2*campos + flip1*self.pos), rendersize)
+        g.draw.circle(display, self.color, world2render(self.pos), rendersize)
 
 
 class Ship:
@@ -58,6 +58,17 @@ campos = camx, camy = np.array((0, 4))
 flip1 = np.array((1, -1))
 flip2 = np.array((-1, 1))
 
+# Says whether the game is panning or not (to update the campos)
+Panning = False
+# dummy variable used for holding offset while panning
+PanStartPos = np.array((0, 0))
+CamPosStart = np.array((0, 0))
+CamPosOffset = np.array((0, 0))
+
+# Says what screen the game is in
+MainScreen = True
+Paused = False
+
 # Color Palette
 colors = DotMap({
     'black': (13, 1, 6),
@@ -83,8 +94,8 @@ def zoomin():
     if camzoom < 4*camzoomdefault:
         camzoom *= 2
 
-def pan(dpos:np.array):
-    campos = np.multiply(np.add(campos, dpos), camzoom)
+def mouse():
+    return np.array(g.mouse.get_pos())
 
 def render2world(renderpos:np.array):
     '''Transforms camera coordinates to in-world coordinates'''
@@ -95,16 +106,24 @@ def world2render(worldpos:np.array):
     return center + camzoom*(flip2*campos + flip1*worldpos)
 
 def render():
-    # draw background
-    display.fill(colors.black)
+    if MainScreen:
+        global Panning, campos
+        # Handle Game States
+
+
+        # draw background
+        display.fill(colors.black)
+
+        for body in bodies:
+            body.render()
+
+        # flip display
+        g.display.flip()
+        ### NOTE this might break in the future when the game is going on long, because without the drawing of the backgrund/
+        ### it doesnt work; the previous frame is still rendered
     
-    for body in bodies:
-        body.render()
-    
-    # flip display
-    g.display.flip()
-    ### NOTE this might break in the future when the game is going on long, because without the drawing of the backgrund/
-    ### it doesnt work; the previous frame is still rendered
+    elif Paused:
+        pass
 
     
 
@@ -118,7 +137,7 @@ for i in range(100):
 
 ## GAME FUNCTIONS
 def handle(event:g.event):
-    global campos
+    global Panning, Paused, PanStartPos, CamPosStart, running, campos, CamPosOffset
     '''Handle events and stuff'''
     
     if event.type == g.QUIT:
@@ -140,9 +159,36 @@ def handle(event:g.event):
         if event.button == 3:
             # implement panning with the right mouse button
             # set camera position to the current mouse location
-            print('you right clicked!')
-            campos = render2world(np.array(g.mouse.get_pos()))
-            print(campos)
+            print('you right clicked')
+            Panning = True
+            CamPosStart = campos
+            CamPosOffset = campos - render2world(mouse())
+
+    if event.type == g.MOUSEBUTTONUP:
+        if event.button == 1:
+            print('you left unclicked')
+        if event.button == 3:
+            # implement panning with the right mouse button
+            # set camera position to the current mouse location
+            print('you right unclicked')
+            Panning = False
+
+    if event.type == g.MOUSEMOTION:
+        if Panning:
+            campos = CamPosStart - (-campos + render2world(mouse())) - CamPosOffset
+
+    # handle key presses
+    if event.type == g.KEYDOWN:
+        if event.key == g.K_ESCAPE:
+            print('Escape was pressed')
+            # do pausing
+            Paused = not Paused
+            if Paused:
+                print('Game Paused')
+            if not Paused:
+                print('Game Unpaused')
+
+            
             
         
 
@@ -153,7 +199,7 @@ def main():
         handle(event)
 
     render()
-    clock.tick(60)
+    clock.tick(FPS)
 
 
 if __name__ == '__main__':
@@ -162,7 +208,8 @@ if __name__ == '__main__':
     g.display.set_caption('Strawberry Skies')
     clock = g.time.Clock()
     display.fill(colors.black)
-
+    
+    FPS = 60
     running = True
 
 
