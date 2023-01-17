@@ -1,5 +1,6 @@
 # import libraries
 import pygame as g
+from pygame import gfxdraw as draw
 import math
 import numpy as np
 import random as r
@@ -9,8 +10,14 @@ import Camera
 import Colors
 
 
+def drawcircle(surface, pos, r, color):
+    pos = np.int64(pos)
+    draw.filled_circle(surface, *pos, int(r), color)
+    draw.aacircle(surface, *pos, int(r), color)
+
+
 class Body:
-    def __init__(self, pos: np.ndarray, velocity: np.ndarray, mass, color) -> None:
+    def __init__(self, pos: np.ndarray, mass, data) -> None:
         # position in the game world
         self.pos = pos
         # mass (for physics)
@@ -19,18 +26,44 @@ class Body:
         self.radius = math.atan(self.mass)
 
 
-        self.color = color
+        self.color = data['color']
+        self.name = data['name']
         
-    def render(self):
+    def render(self, display):
         # radius to be drawn on the screen
         rendersize = Camera.camzoom*(self.radius)
-        g.draw.circle(display, self.color, world2render(self.pos), rendersize)
+        drawcircle(display, world2render(self.pos), rendersize, self.color)
 
-class Star(Body):
-    pass
+class Sattelite:
+    def __init__(self, parent:Body, distance:float, mass:float, data:dict) -> None:
+        self.parent = parent
+        self.distance = distance
 
-class Planet(Body):
-    pass        
+        
+        # position in the game world
+        ### NOTE in the future make this pick a random position along the circle to render
+        self.pos = self.parent.pos + np.array((self.distance, 0))
+        # mass (for physics)
+        self.mass = mass
+        # radius of planet
+        self.radius = math.atan(self.mass)
+
+
+        self.color = data['color']
+
+
+
+    def render(self, display):
+        # radius to be drawn on the screen
+        rendersize = int(Camera.camzoom*(self.radius))
+
+        # render the orbit
+        draw.aacircle(display, *np.int64(world2render(self.parent.pos)), int(Camera.camzoom*self.distance), Colors.white)
+        # render the planet itself
+        drawcircle(display, world2render(self.pos), rendersize, self.color)
+
+# import test system
+import System1
 
 class Ship:
     def __init__(self, x, y) -> None:
@@ -53,11 +86,11 @@ def mouse():
 
 def render2world(renderpos:np.array):
     '''Transforms camera coordinates to in-world coordinates'''
-    return Camera.flip1*((1/Camera.camzoom)*(renderpos - center) - Camera.flip2*Camera.campos)
+    return Camera.flip1*((1/Camera.camzoom)*(renderpos - Camera.center) - Camera.flip2*Camera.campos)
 
 def world2render(worldpos:np.array):
     '''Transforms in-world coordinates to camera coordinates'''
-    return center + Camera.camzoom*(Camera.flip2*Camera.campos + Camera.flip1*worldpos)
+    return Camera.center + Camera.camzoom*(Camera.flip2*Camera.campos + Camera.flip1*worldpos)
 
 def render():
     if MainScreen:
@@ -68,7 +101,7 @@ def render():
         display.fill(Colors.black)
 
         for body in bodies:
-            body.render()
+            body.render(display)
 
         # flip display
         g.display.flip()
@@ -174,9 +207,9 @@ if __name__ == '__main__':
     # initialize basic stuff
     ## GENERAL GAME ESTABLISHMENT
     # define game variables
-    dim = width, height = np.array((800, 800))
+    #Camera.dim = width, height = np.array((800, 800))
     # the center vector points from the corner of the screen to the middle
-    center = np.array((width/2, height/2))
+    #Camera.center = np.array((width/2, height/2))
 
 
     # Says what screen the game is in
@@ -185,7 +218,7 @@ if __name__ == '__main__':
 
     
     # initialize the game stuff
-    display = g.display.set_mode(dim)
+    display = g.display.set_mode(Camera.dim)
     g.display.set_caption('Strawberry Skies')
     clock = g.time.Clock()
     display.fill(Colors.black)
@@ -193,14 +226,14 @@ if __name__ == '__main__':
     FPS = 60
     running = True
 
+    # set icon
+    img = g.image.load('strawberry.png')
+    g.display.set_icon(img)
+
 
     # Create the world to be rendered
     ## GAME WORLD
-    bodies = [Body(np.array((0, 0)), 1, 1, Colors.red), Body(np.array((2, 2)), 2, 2, Colors.blue), Body(np.array((0, 4)), 4, 0.5, Colors.green)]
-    # make lots of planets
-    #for i in range(100):
-    #    bodies.append(Body(np.array(r.randrange(-40, 40), r.randrange(-40, 40)), r.randrange(1, 3), r.choice(planetcolors)))
-
+    bodies = System1.System
 
     while running:
         main()
