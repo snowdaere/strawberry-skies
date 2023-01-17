@@ -114,6 +114,7 @@ def render():
 
 ## GAME FUNCTIONS
 def handle(event:g.event):
+    global running, Paused
     '''Handle events and stuff'''
     
     if event.type == g.QUIT:
@@ -163,6 +164,12 @@ def handle(event:g.event):
                 print('Game Paused')
             if not Paused:
                 print('Game Unpaused')
+        # implement forced crash
+        if event.key == g.K_F1:
+            print('Quitting')
+            running = False
+            g.quit()
+            quit()
 
             
 def update():
@@ -218,7 +225,8 @@ if __name__ == '__main__':
 
     
     # initialize the game stuff
-    display = g.display.set_mode(Camera.dim)
+    flags = g.FULLSCREEN | g.HWSURFACE
+    display = g.display.set_mode(Camera.dim, flags, vsync=1)
     g.display.set_caption('Strawberry Skies')
     clock = g.time.Clock()
     display.fill(Colors.black)

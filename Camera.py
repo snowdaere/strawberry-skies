@@ -18,6 +18,6 @@ CamPosOffset = np.array((0, 0))
 
 ## GENERAL GAME ESTABLISHMENT
 # define game variables
-dim = width, height = np.array((800, 800))
+dim = width, height = np.array((1920, 1080))
 # the center vector points from the corner of the screen to the middle
 center = np.array((width/2, height/2))
