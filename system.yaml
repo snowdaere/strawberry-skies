@@ -1,0 +1,10 @@
+sun:
+  name: Son
+  orbits: none
+  mass: 10
+  color: yellow
+planet:
+  name: Foo
+  orbits:
+    parent: Son
+  
