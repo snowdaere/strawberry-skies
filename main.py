@@ -81,7 +81,7 @@ class Sattelite:
 # import test system
 import System1
 
-class FreeBody:
+class Ship:
     def __init__(self, x:float, y:float, color):
         # physics variables
         self.pos = np.array((x, y))
@@ -93,6 +93,9 @@ class FreeBody:
 
         # gameplay information
         self.orbiting = None
+        self.nearest = None
+
+        self.distances = [0.0] * len(Bodies)
 
     def render(self, display):
         # DEFAULT IS 0.01
@@ -105,28 +108,44 @@ class FreeBody:
         dy = self.pos[1] - object.pos[1]
         return np.sqrt(dx**2 + dy**2)
 
+    def updatedist(self, bodies):
+        for i, object in enumerate(bodies):
+            self.distances[i] = self.getdistfrom(object)
+
     def getunit(self, object:Union[Body, Sattelite]):
         '''returns unit vector pointing at the object'''
         return (self.pos-object.pos)/self.getdistfrom(object)
 
-    def getaccel(self, bodies):
+    def updateaccel(self, bodies):
         acc = np.array((0, 0))
-        for body in bodies:
-            r = self.getdistfrom(body)
+        for i, r in enumerate(self.distances):
+            body = bodies[i]
             acc  = acc -1*GameState.G*body.mass*(1/r**2)*self.getunit(body)
         self.acc = acc
+
+    def setnearest(self, bodies):
+        min = 1000
+        mindex = -1
+        for i, dist in enumerate(self.distances):
+            if dist < min:
+                min = dist
+                mindex = i
+        self.nearest = bodies[mindex]
 
 
     
 
     def update(self):
         if self.orbiting is None:
+
+            # update distances
+            self.updatedist(Bodies)
+
+            # find nearest planet
+            self.setnearest(Bodies)
+
             # calculate acceleration
-            acc = np.array((0.0, 0.0))
-            for body in Bodies:
-                r = self.getdistfrom(body)
-                acc  = acc - GameState.G*body.mass*(1/r**2)*self.getunit(body)
-            self.acc = acc
+            self.updateaccel(Bodies)
 
 
             # here, if the ship is not orbiting anything
@@ -171,11 +190,23 @@ def render():
         for body in Bodies:
             body.render(display)
         
+
+
+        ## render player and HUD information
         Player.render(display)
 
-        # render comets
-        for comet in comets:
-            comet.render(display)
+        # render orbit HUD
+        
+
+        # render text info
+        display.blit(font.render(f'FPS: {clock.get_fps():.1f}', False, Colors.white), (10, 10))
+        display.blit(font.render(f'Nearest: {Player.nearest.name}', False, Colors.white), (10, 25))
+        display.blit(font.render(f'Paused: {GameState.Paused}', False, Colors.white), (10, 40))
+        display.blit(font.render(f'Time: {GameState.t:.2f}', False, Colors.white), (10, 55))
+
+
+
+
 
         
         
@@ -229,6 +260,8 @@ def handle(event:g.event):
     if event.type == g.MOUSEMOTION:
         if Camera.Dragging:
             Camera.campos = Camera.CamPosStart - (-Camera.campos + render2world(mouse())) - Camera.CamPosOffset
+            # if dragging, turn off follow
+            Camera.Follow = False
 
     # handle key presses
     if event.type == g.KEYDOWN:
@@ -236,10 +269,6 @@ def handle(event:g.event):
             print('Escape was pressed')
             # do pausing
             GameState.Paused = not GameState.Paused
-            if Paused:
-                print('Game Paused')
-            if not Paused:
-                print('Game Unpaused')
         # implement forced crash
         if event.key == g.K_DELETE:
             print('Quitting')
@@ -247,8 +276,8 @@ def handle(event:g.event):
             g.quit()
             quit()
         if event.key == g.K_q:
-            # toggle panning mode
-            Camera.campos = np.floor(Player.pos)
+            # toggle following mode
+            Camera.Follow = True
             Camera.camzoom = Camera.camzoommax
 
             
@@ -267,9 +296,15 @@ def update():
         Player.update()
 
 
+
+        # update camera position if following
+        if Camera.Follow:
+            Camera.campos = Player.pos
+
+
+
         
-        for comet in comets:
-            comet.update()
+
     else:
         pass
         
@@ -284,7 +319,6 @@ def main():
 
     render()
     clock.tick(FPS)
-    print(clock.get_fps())
 
 
 
@@ -308,7 +342,9 @@ if __name__ == '__main__':
     g.display.set_caption('Strawberry Skies')
     clock = g.time.Clock()
     display.fill(Colors.black)
-    #font = g.font.Font('Freesansbold.ttf', 32)
+
+    g.font.init()
+    font = g.font.SysFont('Courier', 20)
     
     FPS = 60
     running = True
@@ -322,10 +358,7 @@ if __name__ == '__main__':
     ## GAME WORLD
     Bodies = System1.System
 
-    Player = FreeBody(33, 5, Colors.purple)
-    comets = []
-    for i in range(1000):
-        comets.append(FreeBody(r.randrange(-40, 40), r.randrange(-40, 40), Colors.red))
-
+    Player = Ship(33, 5, Colors.purple)
+    
     while running:
         main()
