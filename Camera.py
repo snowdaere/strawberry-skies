@@ -15,6 +15,8 @@ flip1 = np.array((1, -1))
 flip2 = np.array((-1, 1))
 # Says whether the game is panning or not (to update the campos)
 Dragging = False
+# is the game following the ship?
+Follow = True
 # dummy variable used for holding offset while panning
 PanStartPos = np.array((0, 0))
 CamPosStart = np.array((0, 0))
