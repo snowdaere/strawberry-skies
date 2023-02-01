@@ -38,4 +38,15 @@ def world2render(worldpos:np.array):
     return center + camzoom*(flip2*campos + flip1*worldpos)
 
 def mouse():
+    '''gets mouse position as a vector'''
     return np.array(g.mouse.get_pos())
+
+def zoomout():
+    '''zooms out'''
+    if camzoom > camzoommin:
+        camzoom *= 0.5
+
+def zoomin():
+    '''zooms in'''
+    if camzoom < camzoommax:
+        camzoom *= 2

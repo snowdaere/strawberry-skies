@@ -11,6 +11,7 @@ import Camera
 import Colors
 import GameState
 import Ship
+import Handle
 
 '''it has been 6 billion years. i am the collected consciousness of all humanity, ascended to existence in the electrical and gravitational fields that permeate the galaxy as a single giant neural network. the galaxy is so expanded that the light of one star no longer reaches another. i am still playing strawberry skies'''
 
@@ -95,16 +96,6 @@ class Sattelite:
 import System1
 
 
-def zoomout():
-    if Camera.camzoom > Camera.camzoommin:
-        Camera.camzoom *= 0.5
-
-def zoomin():
-    if Camera.camzoom < Camera.camzoommax:
-        Camera.camzoom *= 2
-
-
-
 
 
 def say(string, color, xy):
@@ -153,112 +144,10 @@ def render():
     elif Paused:
         pass
 
-
-## GAME FUNCTIONS
-def handle(event:g.event):
-    global running
-    '''Handle events and stuff'''
-    
-    if event.type == g.QUIT:
-
-        running = False
-        g.quit()
-        quit()
-    
-    # implement zooming
-    if event.type == g.MOUSEWHEEL:
-        if event.y < 0:
-            zoomout()
-        if event.y > 0:
-            zoomin()
-    
-    if event.type == g.MOUSEBUTTONDOWN:
-        if event.button == 1:
-            print('you left clicked')
-        if event.button == 3:
-            # implement panning with the right mouse button
-            # set camera position to the current mouse location
-            print('you right clicked')
-            Camera.Dragging = True
-            Camera.CamPosStart = Camera.campos
-            Camera.CamPosOffset = Camera.campos - Camera.render2world(Camera.mouse())
-
-    if event.type == g.MOUSEBUTTONUP:
-        if event.button == 1:
-            print('you left unclicked')
-        if event.button == 3:
-            # implement panning with the right mouse button
-            # set camera position to the current mouse location
-            print('you right unclicked')
-            Camera.Dragging = False
-
-    if event.type == g.MOUSEMOTION:
-        if Camera.Dragging:
-            Camera.campos = Camera.CamPosStart - (-Camera.campos + Camera.render2world(Camera.mouse())) - Camera.CamPosOffset
-            # if dragging, turn off follow
-            Camera.Follow = False
-
-    # handle key presses
-    if event.type == g.KEYDOWN:
-        if event.key == g.K_ESCAPE:
-            # do pausing
-            GameState.Paused = not GameState.Paused
         
-        # implement forced crash
-        ### NOTE implement actual quit mechanism, remove this after that
-        if event.key == g.K_DELETE:
-            print('Quitting')
-            running = False
-            g.quit()
-            quit()
-        
-        if event.key == g.K_q:
-            # toggle following mode
-            Camera.Follow = True
-        
-        if event.key == g.K_r:
-            # begin orbiting the planet
-            Player.attemptorbit()
-
-        if event.key == g.K_f:
-            # get out of the orbit
-            Player.deorbit()
-        
-        if event.key == g.K_w:
-            # either way, toggle thrust
-            Player.thrusting = True
-        
-        if event.key == g.K_v:
-            # lock and unlock selection on a planet
-            Player.selectionhold = not Player.selectionhold
-        
-        if event.key == g.K_INSERT:
-            # respawn key
-            Player.respawn()
-
-        # rotation doing
-        if event.key == g.K_a:
-            Player.rotateCCW = True
-        
-        if event.key == g.K_a:
-            Player.rotateCW = True
-
-    if event.type == g.KEYUP:
-        if event.key == g.K_w:
-            Player.thrusting = False
-
-        if event.key == g.K_a:
-            Player.rotateCCW = False
-        
-        if event.key == g.K_a:
-            Player.rotateCW = False
-        
-
-
-
-            
+   
 def update():
-
+    '''update the game state'''
     if not GameState.Paused:
         # update the game time
         GameState.t += GameState.dt
@@ -268,33 +157,26 @@ def update():
         for planet in System1.System:
             planet.update(GameState.t)
 
-        # update ships
+        # update Player
         Player.update()
-
-
 
         # update camera position if following
         if Camera.Follow:
             Camera.campos = Player.pos
 
-
-
-        
-
     else:
         pass
-        
 
 
 def main():
     '''do the game stuff'''
     for event in g.event.get():
-        handle(event)
+        Handle.handle(event, Player)
     
     update()
 
     render()
-    clock.tick(FPS)
+    clock.tick(GameState.FPS)
 
 
 
@@ -311,7 +193,6 @@ if __name__ == '__main__':
     MainScreen = True
     Paused = False
 
-    
     # initialize the game stuff
     flags = g.HWSURFACE | g.FULLSCREEN
     display = g.display.set_mode(Camera.dim, flags, vsync=1)
@@ -319,12 +200,10 @@ if __name__ == '__main__':
     clock = g.time.Clock()
     display.fill(Colors.black)
 
+    # initialize fint
     g.font.init()
     font = g.font.SysFont('Courier', 20)
     
-    FPS = 60
-    running = True
-
     # set icon
     img = g.image.load('strawberry.png')
     g.display.set_icon(img)
@@ -334,7 +213,7 @@ if __name__ == '__main__':
     ## GAME WORLD
     Bodies = System1.System
 
-    Player = Ship.Ship(33, 5, Colors.purple)
+    Player = Ship.Player(33, 5, Colors.purple)
     
-    while running:
+    while GameState.running:
         main()
