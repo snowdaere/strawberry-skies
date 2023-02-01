@@ -38,9 +38,12 @@ class Player:
         self.selected = None
 
 
-        # play information
+        # control information
         self.thrusting = False
         self.thrustforce = 0.005
+        self.rotateCCW = False
+        self.rotateCW = False
+
 
 
     def getdistfrom(self, object):
@@ -65,6 +68,14 @@ class Player:
         unit = (dif)/np.sqrt(dif[0]**2 + dif[1]**2)
         self.thrusting = True
         return unit*(self.thrustforce/self.mass)
+
+    ### TODO implement rotation
+    def rotate(self):
+        '''rotates ship according to mass'''
+        if self.rotateCCW:
+            pass
+        if self.rotateCW:
+            pass
 
     def updateaccel(self, bodies):
         '''updates acceleration according to the distances to bodies'''

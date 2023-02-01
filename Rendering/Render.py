@@ -1,14 +1,25 @@
+import numpy as np
 import pygame as g
+import pygame.gfxdraw as draw
 
 import GameState
 import Rendering.Camera as Camera
 import Rendering.Colors as Colors
+import Entities.Player as Player
 
 
 def say(display, string, color, xy):
+    '''spits a changing string onto a position on screen'''
     display.blit(GameState.font.render(string, False, color), xy)
 
-def render(display, Bodies, Player):
+def drawcircle(surface, pos, r, color):
+    '''draws anti-aliased circle at position'''
+    pos = np.int64(pos)
+    draw.filled_circle(surface, *pos, int(r), color)
+    draw.aacircle(surface, *pos, int(r), color)
+
+def render(display, Bodies, Player: Player.Player):
+    '''general render command for the game'''
     # handle screen
     if GameState.MainScreen:
         
@@ -37,7 +48,7 @@ def render(display, Bodies, Player):
         if Player.dead:
             say(display, f'You Died', Colors.red, (10, 100))
         say(display, f'Max Orbit: {Player.selected.maxorbit}', Colors.white, (10, 115))
-        say(display, f'Orbit: {Camera.campos}', Colors.white, (10, 115))
+        say(display, f'dsitance: {Player.selecteddist}', Colors.white, (10, 130))
 
 
         

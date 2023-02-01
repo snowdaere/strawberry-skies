@@ -1,8 +1,5 @@
 # import libraries
 import pygame as g
-import math
-import numpy as np
-import random as r
 
 # import Game Modules
 import GameState
@@ -10,8 +7,6 @@ import Rendering.Camera as Camera
 import Rendering.Colors as Colors
 import Rendering.Render as Render
 import Entities.Player as Player
-import Entities.Body as Body
-import Entities.Sattelite as Sattelite
 import Handle
 
 '''it has been 6 billion years. i am the collected consciousness of all humanity, 
@@ -46,7 +41,7 @@ def update():
 
 
 def main():
-    '''handle, update, render'''
+    '''handle input, update, render'''
     for event in g.event.get():
         Handle.handle(event, Player0)
     
@@ -58,7 +53,6 @@ def main():
 
 
 if __name__ == '__main__':
-    
     # Create the world
     ## GAME WORLD
     GameState.Bodies = System1.System

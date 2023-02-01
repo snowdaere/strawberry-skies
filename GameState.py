@@ -27,7 +27,7 @@ g.font.init()
 font = g.font.SysFont('Courier', 20)
 
 # set icon
-gameicon = g.image.load('strawberry.png')
+gameicon = g.image.load('Assets/strawberry.png')
 g.display.set_icon(gameicon)
 
 Bodies = None

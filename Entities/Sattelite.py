@@ -12,11 +12,14 @@ import Entities.Body as Body
 
 
 def drawcircle(surface, pos, r, color):
+    '''draw antialized circle at a position on the surface'''
     pos = np.int64(pos)
     draw.filled_circle(surface, *pos, int(r), color)
     draw.aacircle(surface, *pos, int(r), color)
 
+
 class Sattelite:
+    '''a body, orbits a body or sattelite'''
     def __init__(self, parent:Body.Body, distance:float, mass:float, data:dict) -> None:
         self.parent = parent
         self.distance = distance
@@ -43,12 +46,14 @@ class Sattelite:
 
 
     def update(self, t):
+        '''updates state of the sattelite'''
         # Calculate new position
         self.pos = self.parent.pos + self.distance*np.array((np.cos(self.omega*t), np.sin(self.omega*t)))
         self.vel = self.distance*self.omega*np.array((-1*np.sin(self.omega*t), np.cos(self.omega*t)))
 
 
     def render(self, display):
+        '''render sattelite to a display'''
         # radius to be drawn on the screen
         rendersize = int(Camera.camzoom*(self.radius))
 

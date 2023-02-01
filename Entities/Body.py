@@ -1,18 +1,13 @@
 # import libraries
 import numpy as np
-from pygame import gfxdraw as draw
 import math
 # import game variables
 import Rendering.Camera as Camera
-
-
-def drawcircle(surface, pos, r, color):
-    pos = np.int64(pos)
-    draw.filled_circle(surface, *pos, int(r), color)
-    draw.aacircle(surface, *pos, int(r), color)
+import Rendering.Render as Render
 
 
 class Body:
+    '''non moving body; ie a central star. Required to anchor a system'''
     def __init__(self, pos: np.ndarray, mass, data) -> None:
         # position in the game world
         self.pos = pos
@@ -31,9 +26,10 @@ class Body:
         self.name = data['name']
         
     def render(self, display):
-        # radius to be drawn on the screen
+        '''render in-world position on screen'''
         rendersize = Camera.camzoom*(self.radius)
-        drawcircle(display, Camera.world2render(self.pos), rendersize, self.color)
+        Render.drawcircle(display, Camera.world2render(self.pos), rendersize, self.color)
 
     def update(self, t):
+        '''does nothing'''
         pass

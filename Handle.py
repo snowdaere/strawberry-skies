@@ -1,10 +1,9 @@
-import numpy as np
 import Rendering.Camera as Camera
 import GameState
 import pygame as g
 
 def handle(event:g.event, Player):
-    '''Handle events and stuff'''
+    '''Handle player input and stuff'''
     
     if event.type == g.QUIT:
         GameState.running = False
