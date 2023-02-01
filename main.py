@@ -102,7 +102,7 @@ def say(string, color, xy):
     display.blit(font.render(string, False, color), xy)
 
 
-def render():
+def render(Player):
     # handle screen
     if MainScreen:
         
@@ -119,8 +119,6 @@ def render():
         Player.render(display)
 
         # render orbit HUD
-
-
         # render text info
         say(f'FPS: {clock.get_fps():.1f}', Colors.white, (10, 10))
         say(f'Time: {GameState.t:.2f}', Colors.white, (10, 25))
@@ -132,6 +130,42 @@ def render():
             say(f'Orbiting: {Player.orbit.name}', Player.orbit.color, (10, 85))
         if Player.dead:
             say(f'You Died', Colors.red, (10, 100))
+        say(f'Zoom: {Camera.campos}', Colors.white, (10, 115))
+
+        
+        # draw orbit brackets around selected body
+        color = Colors.black
+        if not Player.orbiting:
+            if Player.selected.minorbit <= Player.selecteddist <= Player.selected.maxorbit:
+                color = Colors.yellow
+            else:
+                color = Colors.red
+        else:
+            color = Colors.green
+
+        if not Player.dead:
+            # if Player.selectionhold:
+            # # draw blue marker around nearest planet if selected hold
+            #     g.draw.circle(display, Colors.blue, Camera.world2render(Player.nearest.pos), Camera.camzoom*Player.nearest.minorbit, width=1)
+            #     g.draw.circle(display, Colors.blue, Camera.world2render(Player.nearest.pos), Camera.camzoom*Player.nearest.maxorbit, width=1)
+
+
+
+            # draw orbit brackets around selected planet
+            g.draw.circle(display, color, Camera.world2render(Player.selected.pos), Camera.camzoom*Player.selected.minorbit, width=1)
+            g.draw.circle(display, color, Camera.world2render(Player.selected.pos), Camera.camzoom*Player.selected.maxorbit, width=1)
+
+            linecolor = Colors.red
+            if Player.selectionhold:
+                linecolor = Colors.blue
+            # draw vector to selected planet
+            g.draw.line(display, linecolor, Camera.world2render(Player.pos), Camera.world2render(Player.selected.pos))
+
+            # draw vector pointing from player to mouse pos
+            thrustcolor = Colors.purple
+            if Player.thrusting:
+                thrustcolor = Colors.green
+            g.draw.line(display, thrustcolor, Camera.world2render(Player.pos), g.mouse.get_pos())
 
 
         
@@ -145,7 +179,6 @@ def render():
         pass
 
         
-   
 def update():
     '''update the game state'''
     if not GameState.Paused:
@@ -175,7 +208,7 @@ def main():
     
     update()
 
-    render()
+    render(Player)
     clock.tick(GameState.FPS)
 
 

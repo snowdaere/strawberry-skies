@@ -4,8 +4,8 @@ import pygame as g
 ## CAMERA CODE
 # initialize the camera settings
 # is the scale setting, or how many display pixels make a game unit
-camzoomdefault = 100
-camzoom = camzoomdefault
+camzoomdefault:float = 100
+camzoom:float = camzoomdefault
 campos = camx, camy = np.array((0, 0))
 
 camzoommin = 0.5*0.0625*camzoomdefault
@@ -43,10 +43,12 @@ def mouse():
 
 def zoomout():
     '''zooms out'''
+    global camzoom
     if camzoom > camzoommin:
         camzoom *= 0.5
 
 def zoomin():
     '''zooms in'''
+    global camzoom
     if camzoom < camzoommax:
         camzoom *= 2

@@ -159,39 +159,5 @@ class Player:
         # DEFAULT IS 0.01
         rendersize = int(Camera.camzoom*(0.01))
 
-        # draw orbit brackets around selected body
-        color = Colors.black
-        if not self.orbiting:
-            if self.selected.minorbit <= self.selecteddist <= self.selected.maxorbit:
-                color = Colors.yellow
-            else:
-                color = Colors.red
-        else:
-            color = Colors.green
-
-        if not self.dead:
-            # if self.selectionhold:
-            # # draw blue marker around nearest planet if selected hold
-            #     g.draw.circle(display, Colors.blue, Camera.world2render(self.nearest.pos), Camera.camzoom*self.nearest.minorbit, width=1)
-            #     g.draw.circle(display, Colors.blue, Camera.world2render(self.nearest.pos), Camera.camzoom*self.nearest.maxorbit, width=1)
-
-
-
-            # draw orbit brackets around selected planet
-            g.draw.circle(display, color, Camera.world2render(self.selected.pos), Camera.camzoom*self.selected.minorbit, width=1)
-            g.draw.circle(display, color, Camera.world2render(self.selected.pos), Camera.camzoom*self.selected.maxorbit, width=1)
-
-            linecolor = Colors.red
-            if self.selectionhold:
-                linecolor = Colors.blue
-            # draw vector to selected planet
-            g.draw.line(display, linecolor, Camera.world2render(self.pos), Camera.world2render(self.selected.pos))
-
-            # draw vector pointing from player to mouse pos
-            thrustcolor = Colors.purple
-            if self.thrusting:
-                thrustcolor = Colors.green
-            g.draw.line(display, thrustcolor, Camera.world2render(self.pos), g.mouse.get_pos())
-
         # draw ship itself
         g.draw.circle(display, self.color, Camera.world2render(self.pos), rendersize)
