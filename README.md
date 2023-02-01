@@ -3,6 +3,7 @@ A gravity simulation game
 
 ## Controls
 ### Gameplay Controls
+| ------------- | ------------- |
 | Esc | Pause game |
 | W | Thrust |
 | A | Rotate CCW |
@@ -13,9 +14,11 @@ A gravity simulation game
 | Insert | Respawn |
 
 ### View Controls
+| ------------- | ------------- |
 | Right Click + Drag | Pan across view |
 | Scroll | Zoom in and out |
 | Q | Center view on ship |
 
 ### Program Controls
+| ------------- | ------------- |
 | Delete | Kill program |
