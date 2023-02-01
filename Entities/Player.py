@@ -1,10 +1,9 @@
 import numpy as np
-import Camera
-import GameState
 import pygame as g
-import System1
 
-Bodies = System1.System
+import Rendering.Camera as Camera
+import GameState
+
 
 class Player:
     '''the player object'''
@@ -21,6 +20,7 @@ class Player:
 
         # gameplay information
         self.dead = False
+        self.distances = [0.0] * len(GameState.Bodies)
 
 
         # orbit information
@@ -29,16 +29,13 @@ class Player:
         self.orbitinit = np.array((0, 0))
         self.orbit = None
 
-
         self.nearestdist = 0
-        self.nearest = None
         self.nearestinit = np.array((0, 0))
+        self.nearest = None
 
         self.selectionhold = False
         self.selecteddist = 0
         self.selected = None
-
-        self.distances = [0.0] * len(Bodies)
 
 
         # play information
@@ -124,7 +121,7 @@ class Player:
             self.vel = self.nearest.vel
 
 
-    def update(self):
+    def update(self, Bodies):
         '''update the player state and location and information'''
         if not self.dead:
             if not self.orbiting:

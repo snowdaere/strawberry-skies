@@ -1,5 +1,5 @@
 import numpy as np
-import Camera
+import Rendering.Camera as Camera
 import GameState
 import pygame as g
 
