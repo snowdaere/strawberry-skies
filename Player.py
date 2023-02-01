@@ -1,7 +1,6 @@
 import numpy as np
 import Camera
 import GameState
-import Colors
 import pygame as g
 import System1
 

@@ -4,13 +4,12 @@ from pygame import gfxdraw as draw
 import math
 import numpy as np
 import random as r
-from typing import Union
 
 # import modules
 import Camera
 import Colors
 import GameState
-import Ship
+import Player
 import Handle
 
 '''it has been 6 billion years. i am the collected consciousness of all humanity, ascended to existence in the electrical and gravitational fields that permeate the galaxy as a single giant neural network. the galaxy is so expanded that the light of one star no longer reaches another. i am still playing strawberry skies'''
@@ -118,7 +117,7 @@ def render(Player):
         ## render player and HUD information
         Player.render(display)
 
-        # render orbit HUD
+        ## render orbit HUD
         # render text info
         say(f'FPS: {clock.get_fps():.1f}', Colors.white, (10, 10))
         say(f'Time: {GameState.t:.2f}', Colors.white, (10, 25))
@@ -246,7 +245,7 @@ if __name__ == '__main__':
     ## GAME WORLD
     Bodies = System1.System
 
-    Player = Ship.Player(33, 5, Colors.purple)
+    Player = Player.Player(33, 5, Colors.purple)
     
     while GameState.running:
         main()
