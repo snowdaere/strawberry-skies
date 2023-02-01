@@ -10,6 +10,7 @@ from typing import Union
 import Camera
 import Colors
 import GameState
+import Ship
 
 '''it has been 6 billion years. i am the collected consciousness of all humanity, ascended to existence in the electrical and gravitational fields that permeate the galaxy as a single giant neural network. the galaxy is so expanded that the light of one star no longer reaches another. i am still playing strawberry skies'''
 
@@ -24,6 +25,7 @@ class Body:
     def __init__(self, pos: np.ndarray, mass, data) -> None:
         # position in the game world
         self.pos = pos
+        self.vel = np.array((0, 0))
         # mass (for physics)
         self.mass = mass
         # radius of planet
@@ -40,7 +42,7 @@ class Body:
     def render(self, display):
         # radius to be drawn on the screen
         rendersize = Camera.camzoom*(self.radius)
-        drawcircle(display, world2render(self.pos), rendersize, self.color)
+        drawcircle(display, Camera.world2render(self.pos), rendersize, self.color)
 
     def update(self, t):
         pass
@@ -84,162 +86,13 @@ class Sattelite:
 
         # render the orbit
         #draw.aacircle(display, *np.int64(world2render(self.parent.pos)), int(Camera.camzoom*self.distance), Colors.white)
-        g.draw.circle(display, Colors.white, world2render(self.parent.pos), Camera.camzoom*self.distance, width=1)
+        g.draw.circle(display, Colors.white, Camera.world2render(self.parent.pos), Camera.camzoom*self.distance, width=1)
         
         # render the planet itself
-        drawcircle(display, world2render(self.pos), rendersize, self.color)
+        drawcircle(display, Camera.world2render(self.pos), rendersize, self.color)
 
 # import test system
 import System1
-
-class Ship:
-    def __init__(self, x:float, y:float, color):
-        # physics variables
-        self.pos = np.array((x, y))
-        self.vel = np.array((0.0, 0.0))
-        self.acc = np.array((0.0, 0.0))
-        self.color = color
-
-        self.mass = 0.01
-
-        #self.theta = np.arctan(self.vel[1]/self.vel[0])
-
-        # gameplay information
-        self.dead = False
-
-
-
-        # orbit information
-        self.orbiting = False
-        # position relative to nearby planet
-        self.orbitinit = np.array((0, 0))
-        self.orbit = None
-
-
-        self.nearestdist = 0
-        self.nearest = None
-        self.nearestinit = np.array((0, 0))
-
-        self.selectionhold = False
-        self.selecteddist = 0
-        self.selected = None
-
-        self.distances = [0.0] * len(Bodies)
-
-    def render(self, display):
-        # DEFAULT IS 0.01
-        rendersize = int(Camera.camzoom*(0.01))
-
-        # draw orbit brackets around nearest body
-        color = Colors.black
-        if not self.orbiting:
-            if self.selected.minorbit <= self.selecteddist <= self.selected.maxorbit:
-                color = Colors.yellow
-            else:
-                color = Colors.red
-        else:
-            color = Colors.green
-
-        if not self.dead:
-            # draw orbit brackets around selected planet
-            g.draw.circle(display, color, world2render(self.selected.pos), Camera.camzoom*self.selected.minorbit, width=1)
-            g.draw.circle(display, color, world2render(self.selected.pos), Camera.camzoom*self.selected.maxorbit, width=1)
-
-
-            # draw vector to selected planet
-            g.draw.line(display, Colors.red, world2render(self.pos), world2render(self.selected.pos))
-
-        # draw ship itself
-        g.draw.circle(display, self.color, world2render(self.pos), rendersize)
-
-        
-
-
-    def getdistfrom(self, object):
-        dx = self.pos[0] - object.pos[0]
-        dy = self.pos[1] - object.pos[1]
-        return np.sqrt(dx**2 + dy**2)
-
-    def updatedist(self, bodies):
-        for i, object in enumerate(bodies):
-            self.distances[i] = self.getdistfrom(object)
-
-    def getunit(self, object:Union[Body, Sattelite]):
-        '''returns unit vector pointing at the object'''
-        return (self.pos-object.pos)/self.getdistfrom(object)
-
-    def updateaccel(self, bodies):
-        acc = np.array((0, 0))
-        for i, r in enumerate(self.distances):
-            body = bodies[i]
-            acc  = acc -1*GameState.G*body.mass*(1/r**2)*self.getunit(body)
-        self.acc = acc
-
-    def setnearest(self, bodies):
-        min = 1000
-        mindex = -1
-        for i, dist in enumerate(self.distances):
-            if dist < min:
-                min = dist
-                mindex = i
-        self.nearest = bodies[mindex]
-        self.nearestdist = min
-        self.nearestinit = self.pos - self.nearest.pos
-
-        # automatically deselect
-        self.selecteddist = self.nearestdist
-        if not self.selectionhold:
-            self.selected = self.nearest
-
-
-        
-
-    def attemptorbit(self):
-        # attempt to orbit the nearest body if within bracket
-        ### TODO make it so that you must approach within 45 degrees of the orbital face to engage orbit
-        ### and change the orbit bracket colors to match 
-        
-        if self.selected.minorbit <= self.selecteddist <= self.selected.maxorbit:
-            self.orbiting = True
-            self.orbit = self.selected
-            self.orbitinit = self.nearestinit
-    
-    def deorbit(self):
-        self.orbiting = False
-
-
-    
-
-    def update(self):
-        if not self.dead:
-            if not self.orbiting:
-                # update distances
-                self.updatedist(Bodies)
-
-                # find nearest planet
-                self.setnearest(Bodies)
-
-                # calculate acceleration
-                self.updateaccel(Bodies)
-
-
-                # here, if the ship is not orbiting anything
-                ### NOTE use verlet integration for this you fool
-                self.vel = self.vel + (GameState.dt * self.acc)
-                self.pos = self.pos + (GameState.dt * self.vel)
-                
-            else:
-                # here, movement if the ship is orbiting something
-                self.pos = self.orbit.pos + self.orbitinit
-                self.vel = self.orbit.vel
-
-
-        # check if you are dead
-        if self.nearestdist <= self.nearest.radius:
-            self.dead = True
-            self.pos = self.nearest.pos + self.nearestinit
-
-
 
 
 def zoomout():
@@ -250,16 +103,9 @@ def zoomin():
     if Camera.camzoom < Camera.camzoommax:
         Camera.camzoom *= 2
 
-def mouse():
-    return np.array(g.mouse.get_pos())
 
-def render2world(renderpos:np.array):
-    '''Transforms camera coordinates to in-world coordinates'''
-    return Camera.flip1*((1/Camera.camzoom)*(renderpos - Camera.center) - Camera.flip2*Camera.campos)
 
-def world2render(worldpos:np.array):
-    '''Transforms in-world coordinates to camera coordinates'''
-    return Camera.center + Camera.camzoom*(Camera.flip2*Camera.campos + Camera.flip1*worldpos)
+
 
 def say(string, color, xy):
     display.blit(font.render(string, False, color), xy)
@@ -335,7 +181,7 @@ def handle(event:g.event):
             print('you right clicked')
             Camera.Dragging = True
             Camera.CamPosStart = Camera.campos
-            Camera.CamPosOffset = Camera.campos - render2world(mouse())
+            Camera.CamPosOffset = Camera.campos - Camera.render2world(Camera.mouse())
 
     if event.type == g.MOUSEBUTTONUP:
         if event.button == 1:
@@ -348,7 +194,7 @@ def handle(event:g.event):
 
     if event.type == g.MOUSEMOTION:
         if Camera.Dragging:
-            Camera.campos = Camera.CamPosStart - (-Camera.campos + render2world(mouse())) - Camera.CamPosOffset
+            Camera.campos = Camera.CamPosStart - (-Camera.campos + Camera.render2world(Camera.mouse())) - Camera.CamPosOffset
             # if dragging, turn off follow
             Camera.Follow = False
 
@@ -357,12 +203,15 @@ def handle(event:g.event):
         if event.key == g.K_ESCAPE:
             # do pausing
             GameState.Paused = not GameState.Paused
+        
         # implement forced crash
+        ### NOTE implement actual quit mechanism, remove this after that
         if event.key == g.K_DELETE:
             print('Quitting')
             running = False
             g.quit()
             quit()
+        
         if event.key == g.K_q:
             # toggle following mode
             Camera.Follow = True
@@ -376,13 +225,35 @@ def handle(event:g.event):
             Player.deorbit()
         
         if event.key == g.K_w:
-            # if orbiting, deorbit
-            Player.deorbit()
-            # either way, apply thrust
+            # either way, toggle thrust
+            Player.thrusting = True
         
         if event.key == g.K_v:
             # lock and unlock selection on a planet
             Player.selectionhold = not Player.selectionhold
+        
+        if event.key == g.K_INSERT:
+            # respawn key
+            Player.respawn()
+
+        # rotation doing
+        if event.key == g.K_a:
+            Player.rotateCCW = True
+        
+        if event.key == g.K_a:
+            Player.rotateCW = True
+
+    if event.type == g.KEYUP:
+        if event.key == g.K_w:
+            Player.thrusting = False
+
+        if event.key == g.K_a:
+            Player.rotateCCW = False
+        
+        if event.key == g.K_a:
+            Player.rotateCW = False
+        
+
 
 
             
@@ -463,7 +334,7 @@ if __name__ == '__main__':
     ## GAME WORLD
     Bodies = System1.System
 
-    Player = Ship(33, 5, Colors.purple)
+    Player = Ship.Ship(33, 5, Colors.purple)
     
     while running:
         main()

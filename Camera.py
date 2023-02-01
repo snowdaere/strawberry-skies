@@ -1,4 +1,5 @@
 import numpy as np
+import pygame as g
 
 ## CAMERA CODE
 # initialize the camera settings
@@ -27,3 +28,14 @@ CamPosOffset = np.array((0, 0))
 dim = width, height = np.array((1920, 1080))
 # the center vector points from the corner of the screen to the middle
 center = np.array((width/2, height/2))
+
+def render2world(renderpos:np.array):
+    '''Transforms camera coordinates to in-world coordinates'''
+    return flip1*((1/camzoom)*(renderpos - center) - flip2*campos)
+
+def world2render(worldpos:np.array):
+    '''Transforms in-world coordinates to camera coordinates'''
+    return center + camzoom*(flip2*campos + flip1*worldpos)
+
+def mouse():
+    return np.array(g.mouse.get_pos())
