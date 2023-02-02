@@ -18,7 +18,7 @@ def drawcircle(surface, pos, r, color):
     draw.filled_circle(surface, *pos, int(r), color)
     draw.aacircle(surface, *pos, int(r), color)
 
-def render(display, Bodies, Player: Player.Player):
+def render(display, bodies, player: Player.Player):
     '''general render command for the game'''
     # handle screen
     if GameState.MainScreen:
@@ -27,42 +27,42 @@ def render(display, Bodies, Player: Player.Player):
         display.fill(Colors.black)
 
         # render planets
-        for body in Bodies:
+        for body in bodies:
             body.render(display)
         
 
 
         ## render player and HUD information
-        Player.render(display)
+        player.render(display)
 
         ## render orbit HUD
         # render text info
         say(display, f'FPS: {GameState.clock.get_fps():.1f}', Colors.white, (10, 10))
         say(display, f'Time: {GameState.t:.2f}', Colors.white, (10, 25))
         say(display, f'Paused: {GameState.Paused}', Colors.white, (10, 40))
-        say(display, f'Nearest: {Player.nearest.name}', Player.nearest.color, (10, 55))
-        if Player.selectionhold:
-            say(display, f'Selected: {Player.selected.name}', Player.selected.color, (10, 70))
-        if Player.orbiting:
-            say(display, f'Orbiting: {Player.orbit.name}', Player.orbit.color, (10, 85))
-        if Player.dead:
+        say(display, f'Nearest: {player.nearest.name}', player.nearest.color, (10, 55))
+        if player.selectionhold:
+            say(display, f'Selected: {player.selected.name}', player.selected.color, (10, 70))
+        if player.orbiting:
+            say(display, f'Orbiting: {player.orbit.name}', player.orbit.color, (10, 85))
+        if player.dead:
             say(display, f'You Died', Colors.red, (10, 100))
-        say(display, f'Max Orbit: {Player.selected.maxorbit}', Colors.white, (10, 115))
-        say(display, f'dsitance: {Player.selecteddist}', Colors.white, (10, 130))
+        say(display, f'Max Orbit: {player.selected.maxorbit}', Colors.white, (10, 115))
+        say(display, f'dsitance: {player.selecteddist}', Colors.white, (10, 130))
 
 
         
         # draw orbit brackets around selected body
         color = Colors.black
-        if not Player.orbiting:
-            if Player.selected.minorbit <= Player.selecteddist <= Player.selected.maxorbit:
+        if not player.orbiting:
+            if player.selected.minorbit <= player.selecteddist <= player.selected.maxorbit:
                 color = Colors.yellow
             else:
                 color = Colors.red
         else:
             color = Colors.green
 
-        if not Player.dead:
+        if not player.dead:
             # if Player.selectionhold:
             # # draw blue marker around nearest planet if selected hold
             #     g.draw.circle(display, Colors.blue, Camera.world2render(Player.nearest.pos), Camera.camzoom*Player.nearest.minorbit, width=1)
@@ -71,20 +71,20 @@ def render(display, Bodies, Player: Player.Player):
 
 
             # draw orbit brackets around selected planet
-            g.draw.circle(display, color, Camera.world2render(Player.selected.pos), Camera.camzoom*Player.selected.minorbit, width=1)
-            g.draw.circle(display, color, Camera.world2render(Player.selected.pos), Camera.camzoom*Player.selected.maxorbit, width=1)
+            g.draw.circle(display, color, Camera.world2render(player.selected.pos), Camera.camzoom*player.selected.minorbit, width=1)
+            g.draw.circle(display, color, Camera.world2render(player.selected.pos), Camera.camzoom*player.selected.maxorbit, width=1)
 
             linecolor = Colors.red
-            if Player.selectionhold:
+            if player.selectionhold:
                 linecolor = Colors.blue
             # draw vector to selected planet
-            g.draw.line(display, linecolor, Camera.world2render(Player.pos), Camera.world2render(Player.selected.pos))
+            g.draw.line(display, linecolor, Camera.world2render(player.pos), Camera.world2render(player.selected.pos))
 
             # draw vector pointing from player to mouse pos
             thrustcolor = Colors.purple
-            if Player.thrusting:
+            if player.thrusting:
                 thrustcolor = Colors.green
-            g.draw.line(display, thrustcolor, Camera.world2render(Player.pos), g.mouse.get_pos())
+            g.draw.line(display, thrustcolor, Camera.world2render(player.pos), g.mouse.get_pos())
 
 
         

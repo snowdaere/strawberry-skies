@@ -2,7 +2,7 @@ import Rendering.Camera as Camera
 import GameState
 import pygame as g
 
-def handle(event:g.event, Player):
+def handle(event:g.event, player):
     '''Handle player input and stuff'''
     
     if event.type == g.QUIT:
@@ -63,37 +63,37 @@ def handle(event:g.event, Player):
         
         if event.key == g.K_r:
             # begin orbiting the planet
-            Player.attemptorbit()
+            player.attemptorbit()
 
         if event.key == g.K_f:
             # get out of the orbit
-            Player.deorbit()
+            player.deorbit()
         
         if event.key == g.K_w:
             # either way, toggle thrust
-            Player.thrusting = True
+            player.thrusting = True
         
         if event.key == g.K_v:
             # lock and unlock selection on a planet
-            Player.selectionhold = not Player.selectionhold
+            player.selectionhold = not player.selectionhold
         
         if event.key == g.K_INSERT:
             # respawn key
-            Player.respawn()
+            player.respawn()
 
         # rotation doing
         if event.key == g.K_a:
-            Player.rotateCCW = True
+            player.rotateCCW = True
         
-        if event.key == g.K_a:
-            Player.rotateCW = True
+        if event.key == g.K_d:
+            player.rotateCW = True
 
     if event.type == g.KEYUP:
         if event.key == g.K_w:
-            Player.thrusting = False
+            player.thrusting = False
 
         if event.key == g.K_a:
-            Player.rotateCCW = False
+            player.rotateCCW = False
         
-        if event.key == g.K_a:
-            Player.rotateCW = False
+        if event.key == g.K_d:
+            player.rotateCW = False

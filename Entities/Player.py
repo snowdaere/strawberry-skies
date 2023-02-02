@@ -2,8 +2,8 @@ import numpy as np
 import pygame as g
 
 import Rendering.Camera as Camera
+import Rendering.Colors as Colors
 import GameState
-
 
 class Player:
     '''the player object'''
@@ -36,13 +36,39 @@ class Player:
         self.selectionhold = False
         self.selecteddist = 0
         self.selected = None
+        
 
 
-        # control information
+        ## control information
         self.thrusting = False
         self.thrustforce = 0.005
         self.rotateCCW = False
         self.rotateCW = False
+
+        self.theta = 0
+        self.dtheta = 0.01* GameState.dt * np.pi/self.mass
+        self.size = 0.01
+        self.rendersize = int(Camera.camzoom*(self.size))
+
+
+        # ship drawing thing; vec0 is the default ship shape, always stored
+        # vec is the current orientation
+        self.vec0 = (
+            np.array((1, 0)),
+            np.array((-0.5, 0.5)),
+            np.array((-0.5, -0.5))
+        )
+
+        self.vec = [
+            (1, 0),
+            (-0.5, 0.5),
+            (-0.5, -0.5)
+        ]
+
+        # rotation stuff
+        c, s = np.cos(self.theta), np.sin(self.theta)
+        self.directionvec = np.array((c, s))
+        self.rotatematrix = np.array(((c, -s), (s, c)))
 
 
 
@@ -63,20 +89,25 @@ class Player:
 
     def thrust(self):
         '''applies thrust to the ship according to its mass'''
-        mousepos = Camera.render2world(g.mouse.get_pos())
-        dif = self.pos-mousepos
-        unit = (dif)/np.sqrt(dif[0]**2 + dif[1]**2)
-        self.thrusting = True
-        return unit*(self.thrustforce/self.mass)
+        #mousepos = Camera.render2world(g.mouse.get_pos())
+        #dif = self.pos-mousepos
+        #unit = (dif)/np.sqrt(dif[0]**2 + dif[1]**2)
+        #self.thrusting = True
+        return self.directionvec*(self.thrustforce/self.mass)
 
     ### TODO implement rotation
-    def rotate(self):
-        '''rotates ship according to mass'''
-        if self.rotateCCW:
-            pass
-        if self.rotateCW:
-            pass
+    def rotate(self, d:int):
+        '''rotates ship according to mass; 1 is CCW, -1 is CW'''
+        # only called when rotating
+        # update theta value
+        self.theta += d*self.dtheta % (2*np.pi)
 
+        # update rotation math
+        c, s = np.cos(self.theta), np.sin(self.theta)
+        self.directionvec = np.array((c, s))
+        self.rotatematrix = np.array(((c, -s), (s, c)))
+
+        
     def updateaccel(self, bodies):
         '''updates acceleration according to the distances to bodies'''
         acc = np.array((0, 0))
@@ -84,7 +115,7 @@ class Player:
             body = bodies[i]
             acc  = acc -1*GameState.G*body.mass*(1/r**2)*self.getunit(body)
         if self.thrusting:
-            acc -= self.thrust()
+            acc += self.thrust()
         self.acc = acc
 
     def setnearest(self, bodies):
@@ -132,18 +163,25 @@ class Player:
             self.vel = self.nearest.vel
 
 
-    def update(self, Bodies):
+    def update(self, bodies):
         '''update the player state and location and information'''
         if not self.dead:
+            # update rotation
+            if self.rotateCCW:
+                self.rotate(1)
+            if self.rotateCW:
+                self.rotate(-1)
+
+            # switch between orbit and free mode
             if not self.orbiting:
                 # update distances
-                self.updatedist(Bodies)
+                self.updatedist(bodies)
 
                 # find nearest planet
-                self.setnearest(Bodies)
+                self.setnearest(bodies)
 
                 # calculate acceleration
-                self.updateaccel(Bodies)
+                self.updateaccel(bodies)
 
                 # here, if the ship is not orbiting anything
                 ### NOTE use verlet integration for this you fool
@@ -155,6 +193,7 @@ class Player:
                 self.pos = self.orbit.pos + self.orbitinit
                 self.vel = self.orbit.vel
 
+
         # check if you are dead
         if self.nearestdist <= self.nearest.radius:
             self.dead = True
@@ -164,7 +203,20 @@ class Player:
     def render(self, display):
         '''render the Player and its HUD'''
         # DEFAULT IS 0.01
-        rendersize = int(Camera.camzoom*(0.01))
+        # update rendersize
+        self.rendersize = int(Camera.camzoom*(self.size))
+        renderpos = Camera.world2render(self.pos)
 
-        # draw ship itself
-        g.draw.circle(display, self.color, Camera.world2render(self.pos), rendersize)
+        # update drawing vectors
+        tempvec = map(self.rotatematrix.dot, self.vec0)
+
+        # split and transform vector
+        for i, v in enumerate(tempvec):
+            self.vec[i] = tuple(Camera.world2render(0.01*self.rendersize*v + self.pos))
+
+        
+        # draw triangle
+        g.draw.polygon(display, Colors.orange, self.vec)
+
+        # draw dot at ship position itself
+        g.draw.circle(display, self.color, renderpos, self.rendersize)
