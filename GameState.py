@@ -8,7 +8,8 @@ MainScreen = True
 Paused = False
 FPS = 60
 running = True
-dt = 1/FPS
+# physics time step in s
+dt = 1/60
 # Define universal constants
 # gravitational constant
 G = 0.1
@@ -16,7 +17,7 @@ G = 0.1
 t = 0
 
 # initialize the game stuff
-flags = g.HWSURFACE | g.FULLSCREEN
+flags = g.HWSURFACE | g.FULLSCREEN |g.DOUBLEBUF
 display = g.display.set_mode(Camera.dim, flags, vsync=1)
 g.display.set_caption('Strawberry Skies')
 clock = g.time.Clock()

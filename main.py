@@ -1,5 +1,6 @@
 # import libraries
 import pygame as g
+import time
 
 # import Game Modules
 import GameState
@@ -40,17 +41,6 @@ def update():
         pass
 
 
-def main():
-    '''handle input, update, render'''
-    for event in g.event.get():
-        Handle.handle(event, Player0)
-    
-    update()
-
-    Render.render(GameState.display, GameState.Bodies, Player0)
-
-    GameState.clock.tick(GameState.FPS)
-
 
 if __name__ == '__main__':
     # Create the world
@@ -58,6 +48,29 @@ if __name__ == '__main__':
     GameState.Bodies = System1.System
 
     Player0 = Player.Player(33, 5, Colors.purple)
-    
+
+    # timing stuff
+    previous = time.time()
+    lag = 0.0
+    update()
+
     while GameState.running:
-        main()
+        current = time.time()
+        elapsed = current - previous
+        previous = current
+        lag += elapsed
+
+        '''handle input, update, render'''
+        for event in g.event.get():
+            Handle.handle(event, Player0)
+        
+        while lag >= GameState.dt:
+            update()
+            lag -= GameState.dt
+
+        Render.render(GameState.display, GameState.Bodies, Player0)
+        Render.say(GameState.display, f'FPS: {1/elapsed:.2f}', Colors.white, (10, 10))
+
+        # flip display
+        g.display.flip()
+        # render ms per frame

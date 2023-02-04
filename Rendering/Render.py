@@ -37,18 +37,17 @@ def render(display, bodies, player: Player.Player):
 
         ## render orbit HUD
         # render text info
-        say(display, f'FPS: {GameState.clock.get_fps():.1f}', Colors.white, (10, 10))
-        say(display, f'Time: {GameState.t:.2f}', Colors.white, (10, 25))
-        say(display, f'Paused: {GameState.Paused}', Colors.white, (10, 40))
-        say(display, f'Nearest: {player.nearest.name}', player.nearest.color, (10, 55))
+        say(display, f'Time: {GameState.t:.2f}', Colors.white, (10, 40))
+        say(display, f'Paused: {GameState.Paused}', Colors.white, (10, 55))
+        say(display, f'Nearest: {player.nearest.name}', player.nearest.color, (10, 70))
         if player.selectionhold:
-            say(display, f'Selected: {player.selected.name}', player.selected.color, (10, 70))
+            say(display, f'Selected: {player.selected.name}', player.selected.color, (10, 85))
         if player.orbiting:
-            say(display, f'Orbiting: {player.orbit.name}', player.orbit.color, (10, 85))
+            say(display, f'Orbiting: {player.orbit.name}', player.orbit.color, (10, 100))
         if player.dead:
-            say(display, f'You Died', Colors.red, (10, 100))
-        say(display, f'Max Orbit: {player.selected.maxorbit}', Colors.white, (10, 115))
-        say(display, f'dsitance: {player.selecteddist}', Colors.white, (10, 130))
+            say(display, f'You Died', Colors.red, (10, 115))
+        say(display, f'Max Orbit: {player.selected.maxorbit}', Colors.white, (10, 130))
+        say(display, f'dsitance: {player.selecteddist}', Colors.white, (10, 145))
 
 
         
@@ -89,8 +88,7 @@ def render(display, bodies, player: Player.Player):
 
         
         
-        # flip display
-        g.display.flip()
+
         ### NOTE this might break in the future when the game is going on long, because without the drawing of the backgrund/
         ### it doesnt work; the previous frame is still rendered
     
