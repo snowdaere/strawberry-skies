@@ -1,8 +1,7 @@
-import Rendering.Camera as Camera
-import GameState
+from GameState import GameState
 import pygame as g
 
-def handle(event:g.event, player):
+def handle(event:g.event):
     '''Handle player input and stuff'''
     
     if event.type == g.QUIT:
@@ -13,9 +12,9 @@ def handle(event:g.event, player):
     # implement zooming
     if event.type == g.MOUSEWHEEL:
         if event.y < 0:
-            Camera.zoomout()
+            GameState.Camera.zoomout()
         if event.y > 0:
-            Camera.zoomin()
+            GameState.Camera.zoomin()
     
     if event.type == g.MOUSEBUTTONDOWN:
         if event.button == 1:
@@ -24,9 +23,9 @@ def handle(event:g.event, player):
             # implement panning with the right mouse button
             # set camera position to the current mouse location
             print('you right clicked')
-            Camera.Dragging = True
-            Camera.CamPosStart = Camera.campos
-            Camera.CamPosOffset = Camera.campos - Camera.render2world(Camera.mouse())
+            GameState.Camera.Dragging = True
+            GameState.Camera.CamPosStart = GameState.Camera.campos
+            GameState.Camera.CamPosOffset = GameState.Camera.campos - GameState.Camera.render2world(GameState.Camera.mouse())
 
     if event.type == g.MOUSEBUTTONUP:
         if event.button == 1:
@@ -35,13 +34,13 @@ def handle(event:g.event, player):
             # implement panning with the right mouse button
             # set camera position to the current mouse location
             print('you right unclicked')
-            Camera.Dragging = False
+            GameState.Camera.Dragging = False
 
     if event.type == g.MOUSEMOTION:
-        if Camera.Dragging:
-            Camera.campos = Camera.CamPosStart - (-Camera.campos + Camera.render2world(Camera.mouse())) - Camera.CamPosOffset
+        if GameState.Camera.Dragging:
+            GameState.Camera.campos = GameState.Camera.CamPosStart - (-GameState.Camera.campos + GameState.Camera.render2world(GameState.Camera.mouse())) - GameState.Camera.CamPosOffset
             # if dragging, turn off follow
-            Camera.Follow = False
+            GameState.Camera.Follow = False
 
     # handle key presses
     if event.type == g.KEYDOWN:
@@ -59,41 +58,41 @@ def handle(event:g.event, player):
         
         if event.key == g.K_q:
             # toggle following mode
-            Camera.Follow = True
+            GameState.Camera.Follow = True
         
         if event.key == g.K_r:
             # begin orbiting the planet
-            player.attemptorbit()
+            GameState.Player.attemptorbit()
 
         if event.key == g.K_f:
             # get out of the orbit
-            player.deorbit()
+            GameState.Player.deorbit()
         
         if event.key == g.K_w:
             # either way, toggle thrust
-            player.thrusting = True
+            GameState.Player.thrusting = True
         
         if event.key == g.K_v:
             # lock and unlock selection on a planet
-            player.selectionhold = not player.selectionhold
+            GameState.Player.selectionhold = not GameState.Player.selectionhold
         
         if event.key == g.K_INSERT:
             # respawn key
-            player.respawn()
+            GameState.Player.respawn()
 
         # rotation doing
         if event.key == g.K_a:
-            player.rotateCCW = True
+            GameState.Player.rotateCCW = True
         
         if event.key == g.K_d:
-            player.rotateCW = True
+            GameState.Player.rotateCW = True
 
     if event.type == g.KEYUP:
         if event.key == g.K_w:
-            player.thrusting = False
+            GameState.Player.thrusting = False
 
         if event.key == g.K_a:
-            player.rotateCCW = False
+            GameState.Player.rotateCCW = False
         
         if event.key == g.K_d:
-            player.rotateCW = False
+            GameState.Player.rotateCW = False

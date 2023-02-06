@@ -1,14 +1,17 @@
 # import libraries
 import pygame as g
 import time
+import random as r
 
 # import Game Modules
-import GameState
-import Rendering.Camera as Camera
+from GameState import GameState
 import Rendering.Colors as Colors
 import Rendering.Render as Render
 import Entities.Player as Player
+import Entities.Freebody as Freebody
 import Handle
+# import camera to load into game
+from Rendering.Camera import Camera
 
 '''it has been 6 billion years. i am the collected consciousness of all humanity, 
 ascended to existence in the electrical and gravitational fields that permeate 
@@ -25,17 +28,16 @@ def update():
         # update the game time
         GameState.t += GameState.dt
 
-
         # update the planet position based on time
-        for planet in System1.System:
-            planet.update(GameState.t)
+        for body in GameState.Bodies:
+            body.update()
+
+
+        for entity in GameState.Entities:
+            entity.update()
 
         # update Player
-        Player0.update(GameState.Bodies)
-
-        # update camera position if following
-        if Camera.Follow:
-            Camera.campos = Player0.pos
+        GameState.Player.update()
 
     else:
         pass
@@ -43,33 +45,52 @@ def update():
 
 
 if __name__ == '__main__':
+    # set the camera
+    GameState.Camera = Camera
     # Create the world
     ## GAME WORLD
     GameState.Bodies = System1.System
-
-    Player0 = Player.Player(33, 5, Colors.purple)
+    GameState.Player = Player.Player(33, 5, Colors.purple)
+    # spawn a bunch of physics objects?
+    GameState.Entities = [Freebody.Freebody(r.randrange(-40, 40), r.randrange(-40, 40), Colors.red) for i in range(250)]
 
     # timing stuff
     previous = time.time()
     lag = 0.0
+    # calculate ticks per second
+    tickstart = time.time()
+    tickend = 0.0
+    tickelapsed = 1.0
+    ticklength = 0.0
+    
     update()
 
     while GameState.running:
         current = time.time()
+
         elapsed = current - previous
         previous = current
         lag += elapsed
 
         '''handle input, update, render'''
         for event in g.event.get():
-            Handle.handle(event, Player0)
+            Handle.handle(event)
         
         while lag >= GameState.dt:
+            pretick = time.time()
             update()
+            # frame system
             lag -= GameState.dt
+            # tick system
+            tickend = time.time()
+            tickelapsed = tickend - tickstart
+            tickstart = time.time()
+            ticklength = tickend - pretick
 
-        Render.render(GameState.display, GameState.Bodies, Player0)
-        Render.say(GameState.display, f'FPS: {1/elapsed:.2f}', Colors.white, (10, 10))
+
+        Render.render()
+        Render.say(GameState.display, f'FPS: {1/elapsed:5.2f}', Colors.white, (10, 10))
+        Render.say(GameState.display, f'TPS: {1/tickelapsed:5.2f} / MSPT: {1000*ticklength:5.3f}', Colors.white, (10, 25))
 
         # flip display
         g.display.flip()

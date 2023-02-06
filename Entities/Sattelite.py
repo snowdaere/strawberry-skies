@@ -4,11 +4,10 @@ from pygame import gfxdraw as draw
 import pygame as g
 import math
 # import game variables
-import GameState
-import Rendering.Camera as Camera
+from GameState import GameState
 import Rendering.Colors as Colors
-# import other classes
-import Entities.Body as Body
+from Entities.Entity import Entity
+
 
 
 def drawcircle(surface, pos, r, color):
@@ -17,10 +16,20 @@ def drawcircle(surface, pos, r, color):
     draw.filled_circle(surface, *pos, int(r), color)
     draw.aacircle(surface, *pos, int(r), color)
 
+class Center:
+    '''an anchor for the central position in a solar system'''
+    pos = np.array((0, 0))
+    mass = 0
 
-class Sattelite:
+class Sattelite(Entity):
     '''a body, orbits a body or sattelite'''
-    def __init__(self, parent:Body.Body, distance:float, mass:float, data:dict) -> None:
+    def __init__(self, parent, distance:float, mass:float, data:dict) -> None:
+        if parent == Center:
+            pass
+        elif type(parent) == Sattelite:
+            pass
+        else:
+            raise Exception('Sattelite Parent must be a Center or another Sattelite')
         self.parent = parent
         self.distance = distance
 
@@ -39,27 +48,30 @@ class Sattelite:
         self.pos = self.parent.pos + np.array((self.distance, 0))
         self.vel = np.array((0, 0))
 
-        self.omega = (1/distance)*(math.sqrt(GameState.G * (self.mass + self.parent.mass))/math.sqrt(self.distance))
+        if self.distance == 0:
+            self.omega = 0
+        else:
+            self.omega = (1/distance)*(math.sqrt(GameState.G * (self.mass + self.parent.mass))/math.sqrt(self.distance))
 
         self.color = data['color']
         self.name = data['name']
 
 
-    def update(self, t):
+    def update(self):
         '''updates state of the sattelite'''
         # Calculate new position
-        self.pos = self.parent.pos + self.distance*np.array((np.cos(self.omega*t), np.sin(self.omega*t)))
-        self.vel = self.distance*self.omega*np.array((-1*np.sin(self.omega*t), np.cos(self.omega*t)))
+        self.pos = self.parent.pos + self.distance*np.array((np.cos(self.omega*GameState.t), np.sin(self.omega*GameState.t)))
+        self.vel = self.distance*self.omega*np.array((-1*np.sin(self.omega*GameState.t), np.cos(self.omega*GameState.t)))
 
 
-    def render(self, display):
+    def render(self):
         '''render sattelite to a display'''
         # radius to be drawn on the screen
-        rendersize = int(Camera.camzoom*(self.radius))
+        rendersize = int(GameState.Camera.camzoom*(self.radius))
 
         # render the orbit
         #draw.aacircle(display, *np.int64(world2render(self.parent.pos)), int(Camera.camzoom*self.distance), Colors.white)
-        g.draw.circle(display, Colors.white, Camera.world2render(self.parent.pos), Camera.camzoom*self.distance, width=1)
+        g.draw.circle(GameState.display, Colors.white, GameState.Camera.world2render(self.parent.pos), GameState.Camera.camzoom*self.distance, width=1)
         
         # render the planet itself
-        drawcircle(display, Camera.world2render(self.pos), rendersize, self.color)
+        drawcircle(GameState.display, GameState.Camera.world2render(self.pos), rendersize, self.color)

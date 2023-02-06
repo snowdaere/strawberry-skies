@@ -1,11 +1,12 @@
 import numpy as np
 import pygame as g
 
-import Rendering.Camera as Camera
 import Rendering.Colors as Colors
-import GameState
+from GameState import GameState
+from Entities.Entity import Entity
 
-class Player:
+
+class Player(Entity):
     '''the player object'''
     def __init__(self, x:float, y:float, color):
         # physics variables
@@ -36,8 +37,6 @@ class Player:
         self.selectionhold = False
         self.selecteddist = 0
         self.selected = None
-        
-
 
         ## control information
         self.thrusting = False
@@ -48,8 +47,7 @@ class Player:
         self.theta = 0
         self.dtheta = 0.01* GameState.dt * np.pi/self.mass
         self.size = 0.01
-        self.rendersize = int(Camera.camzoom*(self.size))
-
+        self.rendersize = int(GameState.Camera.camzoom*(self.size))
 
         # ship drawing thing; vec0 is the default ship shape, always stored
         # vec is the current orientation
@@ -78,9 +76,9 @@ class Player:
         dy = self.pos[1] - object.pos[1]
         return np.sqrt(dx**2 + dy**2)
 
-    def updatedist(self, bodies):
+    def updatedist(self):
         '''updates the distances from the ship to each body'''
-        for i, object in enumerate(bodies):
+        for i, object in enumerate(GameState.Bodies):
             self.distances[i] = self.getdistfrom(object)
 
     def getunit(self, object):
@@ -108,17 +106,17 @@ class Player:
         self.rotatematrix = np.array(((c, -s), (s, c)))
 
         
-    def updateaccel(self, bodies):
+    def updateaccel(self):
         '''updates acceleration according to the distances to bodies'''
         acc = np.array((0, 0))
         for i, r in enumerate(self.distances):
-            body = bodies[i]
+            body = GameState.Bodies[i]
             acc  = acc -1*GameState.G*body.mass*(1/r**2)*self.getunit(body)
         if self.thrusting:
             acc += self.thrust()
         self.acc = acc
 
-    def setnearest(self, bodies):
+    def setnearest(self):
         '''picks out which object is nearest (for selection)'''
         min = 10000
         mindex = -1
@@ -128,7 +126,7 @@ class Player:
                 min = dist
                 mindex = i
         # set variables based on findings
-        self.nearest = bodies[mindex]
+        self.nearest = GameState.Bodies[mindex]
         self.nearestdist = min
         self.nearestinit = self.pos - self.nearest.pos
 
@@ -163,7 +161,7 @@ class Player:
             self.vel = self.nearest.vel
 
 
-    def update(self, bodies):
+    def update(self):
         '''update the player state and location and information'''
         if not self.dead:
             # update rotation
@@ -175,13 +173,13 @@ class Player:
             # switch between orbit and free mode
             if not self.orbiting:
                 # update distances
-                self.updatedist(bodies)
+                self.updatedist()
 
                 # find nearest planet
-                self.setnearest(bodies)
+                self.setnearest()
 
                 # calculate acceleration
-                self.updateaccel(bodies)
+                self.updateaccel()
 
                 # here, if the ship is not orbiting anything
                 ### NOTE use verlet integration for this you fool
@@ -200,23 +198,23 @@ class Player:
             self.pos = self.nearest.pos + self.nearestinit
 
 
-    def render(self, display):
+    def render(self):
         '''render the Player and its HUD'''
         # DEFAULT IS 0.01
         # update rendersize
-        self.rendersize = int(Camera.camzoom*(self.size))
-        renderpos = Camera.world2render(self.pos)
+        self.rendersize = int(GameState.Camera.camzoom*(self.size))
+        renderpos = GameState.Camera.world2render(self.pos)
 
         # update drawing vectors
         tempvec = map(self.rotatematrix.dot, self.vec0)
 
         # split and transform vector
         for i, v in enumerate(tempvec):
-            self.vec[i] = tuple(Camera.world2render(0.01*self.rendersize*v + self.pos))
+            self.vec[i] = tuple(GameState.Camera.world2render(0.01*self.rendersize*v + self.pos))
 
         
         # draw triangle
-        g.draw.polygon(display, Colors.orange, self.vec)
+        g.draw.polygon(GameState.display, Colors.orange, self.vec)
 
         # draw dot at ship position itself
-        g.draw.circle(display, self.color, renderpos, self.rendersize)
+        g.draw.circle(GameState.display, self.color, renderpos, self.rendersize)

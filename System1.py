@@ -2,7 +2,6 @@ import numpy as np
 import math
 
 import Rendering.Colors as Colors
-import Entities.Body as Body
 import Entities.Sattelite as Sattelite
 
 '''This code converts YAML into the solar system'''
@@ -14,7 +13,7 @@ def lcm(list:list):
     return lcm
 
 # Central System
-Sun = Body.Body(np.array((0, 0)), 10, {'color': Colors.yellow, 'name':'Sun', 'Sun': True})
+Sun = Sattelite.Sattelite(Sattelite.Center, 0, 10, {'color': Colors.yellow, 'name':'Sun', 'Sun': True})
 
 Planet1 = Sattelite.Sattelite(Sun, 5, 1, {'color': Colors.green, 'name':'Foo', 'Sun': False})
 Moon1 = Sattelite.Sattelite(Planet1, 1, 0.1, {'color': Colors.brown, 'name':'Moo', 'Sun': False})
