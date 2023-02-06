@@ -23,7 +23,6 @@ class Player(Entity):
         self.dead = False
         self.distances = [0.0] * len(GameState.Bodies)
 
-
         # orbit information
         self.orbiting = False
         # position relative to nearby planet
