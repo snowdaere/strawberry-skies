@@ -3,10 +3,10 @@ import pygame as g
 
 import Rendering.Colors as Colors
 from GameState import GameState
-from Entities.Entity import Entity
+from Entities.Freebody import Freebody
 
 
-class Player(Entity):
+class Player(Freebody):
     '''the player object'''
     def __init__(self, x:float, y:float, color):
         # physics variables
@@ -45,8 +45,15 @@ class Player(Entity):
 
         self.theta = 0
         self.dtheta = 0.01* GameState.dt * np.pi/self.mass
+        
+        # rendering information
         self.size = 0.01
         self.rendersize = int(GameState.Camera.camzoom*(self.size))
+        self.renderpos = GameState.Camera.world2render(self.pos)
+        self.img = g.image.load('Assets/smolrocket.png').convert()
+    
+
+
 
         # ship drawing thing; vec0 is the default ship shape, always stored
         # vec is the current orientation
@@ -67,30 +74,17 @@ class Player(Entity):
         self.directionvec = np.array((c, s))
         self.rotatematrix = np.array(((c, -s), (s, c)))
 
-
-
-    def getdistfrom(self, object):
-        '''get distance between the ship and an object'''
-        dx = self.pos[0] - object.pos[0]
-        dy = self.pos[1] - object.pos[1]
-        return np.sqrt(dx**2 + dy**2)
-
-    def updatedist(self):
-        '''updates the distances from the ship to each body'''
-        for i, object in enumerate(GameState.Bodies):
-            self.distances[i] = self.getdistfrom(object)
-
-    def getunit(self, object):
-        '''returns unit vector pointing at the object'''
-        return (self.pos-object.pos)/self.getdistfrom(object)
-
-    def thrust(self):
+    def thrust(self, dir:int):
         '''applies thrust to the ship according to its mass'''
-        #mousepos = Camera.render2world(g.mouse.get_pos())
-        #dif = self.pos-mousepos
-        #unit = (dif)/np.sqrt(dif[0]**2 + dif[1]**2)
-        #self.thrusting = True
-        return self.directionvec*(self.thrustforce/self.mass)
+        # back thrust mechanic
+        #return self.directionvec*(self.thrustforce/self.mass)
+        
+        # mouse thrust mechanic
+        mousepos = GameState.Camera.render2world(g.mouse.get_pos())
+        dif = self.pos-mousepos
+        unit = (dif)/np.sqrt(dif[0]**2 + dif[1]**2)
+        self.thrusting = True
+        return -1*unit*(self.thrustforce/self.mass)
 
     ### TODO implement rotation
     def rotate(self, d:int):
@@ -201,19 +195,27 @@ class Player(Entity):
         '''render the Player and its HUD'''
         # DEFAULT IS 0.01
         # update rendersize
-        self.rendersize = int(GameState.Camera.camzoom*(self.size))
-        renderpos = GameState.Camera.world2render(self.pos)
+        self.rendersize = 2*int(GameState.Camera.camzoom*(self.size))
+        self.renderpos = GameState.Camera.world2render(self.pos)
 
-        # update drawing vectors
-        tempvec = map(self.rotatematrix.dot, self.vec0)
+        x, y = self.renderpos
 
-        # split and transform vector
-        for i, v in enumerate(tempvec):
-            self.vec[i] = tuple(GameState.Camera.world2render(0.01*self.rendersize*v + self.pos))
-
-        
-        # draw triangle
-        g.draw.polygon(GameState.display, Colors.orange, self.vec)
 
         # draw dot at ship position itself
-        g.draw.circle(GameState.display, self.color, renderpos, self.rendersize)
+        if self.rendersize > 2:
+            if 0-self.rendersize <= x <= GameState.Camera.width + self.rendersize:
+                if 0-self.rendersize <= y <= GameState.Camera.height + self.rendersize:
+                    # if zoomed in enough, render the ship
+                    # if zoomed out, draw arrow
+                    # update drawing vectors
+                    tempvec = map(self.rotatematrix.dot, self.vec0)
+
+                    # split and transform vector
+                    for i, v in enumerate(tempvec):
+                        self.vec[i] = tuple(GameState.Camera.world2render(0.01*self.rendersize*v + self.pos))
+
+                    # draw triangle
+                    g.draw.polygon(GameState.display, Colors.orange, self.vec)
+
+                    # draw dot at ship position itself
+                    g.draw.circle(GameState.display, self.color, self.renderpos, self.rendersize)

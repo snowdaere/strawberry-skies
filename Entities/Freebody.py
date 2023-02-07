@@ -21,6 +21,8 @@ class Freebody(Entity):
 
         self.size = 0.01
         self.rendersize = int(GameState.Camera.camzoom*(self.size))
+        self.renderpos = GameState.Camera.world2render(self.pos)
+
 
     def getdistfrom(self, object):
         '''get distance between the ship and an object'''
@@ -68,7 +70,12 @@ class Freebody(Entity):
         # update rendersize
         # self.rendersize = int(Camera.camzoom*(self.size))
         self.rendersize = 10
-        renderpos = GameState.Camera.world2render(self.pos)
+        self.renderpos = GameState.Camera.world2render(self.pos)
+        x, y = self.renderpos
+
 
         # draw dot at ship position itself
-        g.draw.circle(GameState.display, self.color, renderpos, self.rendersize)
+        if self.rendersize > 2:
+            if 0-self.rendersize <= x <= GameState.Camera.width + self.rendersize:
+                if 0-self.rendersize <= y <= GameState.Camera.height + self.rendersize:
+                    g.draw.circle(GameState.display, self.color, self.renderpos, self.rendersize)

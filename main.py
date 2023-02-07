@@ -7,6 +7,7 @@ import random as r
 from GameState import GameState
 import Rendering.Colors as Colors
 import Rendering.Render as Render
+import Rendering.HUD as HUD
 import Entities.Player as Player
 import Entities.Freebody as Freebody
 import Handle
@@ -19,8 +20,6 @@ the galaxy as a single giant neural network. the galaxy is so expanded that
  the light of one star no longer reaches another. 
  i am still playing strawberry skies'''
 
-# import test system
-import System1
   
 def update():
     '''update the game state'''
@@ -49,6 +48,7 @@ if __name__ == '__main__':
     GameState.Camera = Camera
     # Create the world
     ## GAME WORLD
+    import System1
     GameState.Bodies = System1.System
     GameState.Player = Player.Player(33, 5, Colors.purple)
     # spawn a bunch of physics objects?
@@ -89,8 +89,8 @@ if __name__ == '__main__':
 
 
         Render.render()
-        Render.say(GameState.display, f'FPS: {1/elapsed:5.2f}', Colors.white, (10, 10))
-        Render.say(GameState.display, f'TPS: {1/tickelapsed:5.2f} / MSPT: {1000*ticklength:5.3f}', Colors.white, (10, 25))
+        HUD.say(f'FPS: {1/elapsed:5.2f}', Colors.white, (10, 10))
+        HUD.say(f'TPS: {1/tickelapsed:5.2f} / MSPT: {1000*ticklength:5.3f}', Colors.white, (10, 25))
 
         # flip display
         g.display.flip()

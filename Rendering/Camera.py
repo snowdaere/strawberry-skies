@@ -5,6 +5,7 @@ import pygame as g
 # initialize the camera settings
 # is the scale setting, or how many display pixels make a game unit
 class Camera:
+    '''camera variables'''
     camzoomdefault:float = 100
     camzoom:float = camzoomdefault
     campos = camx, camy = np.array((0, 0))

@@ -3,6 +3,7 @@ import pygame as g
 from Rendering.Camera import Camera
 import Rendering.Colors as Colors
 
+
 # Says what screen the game is in
 class GameState:
     MainScreen = True
