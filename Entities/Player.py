@@ -40,6 +40,7 @@ class Player(Freebody):
         ## control information
         self.thrusting = False
         self.thrustforce = 0.005
+        self.thrustdir = 0
         self.rotateCCW = False
         self.rotateCW = False
 
@@ -78,13 +79,16 @@ class Player(Freebody):
         '''applies thrust to the ship according to its mass'''
         # back thrust mechanic
         #return self.directionvec*(self.thrustforce/self.mass)
-        
-        # mouse thrust mechanic
-        mousepos = GameState.Camera.render2world(g.mouse.get_pos())
-        dif = self.pos-mousepos
-        unit = (dif)/np.sqrt(dif[0]**2 + dif[1]**2)
-        self.thrusting = True
-        return -1*unit*(self.thrustforce/self.mass)
+        rotations = [
+            np.array(((1, 0), (0, 1))),
+            np.array(((0, -1), (1, 0))),
+            np.array(((-1, 0), (0, -1))),
+            np.array(((0, 1), (-1, 0)))
+        ]
+        #self.thrusting = True
+
+        return np.matmul(self.directionvec*(self.thrustforce/self.mass), rotations[dir])
+
 
     ### TODO implement rotation
     def rotate(self, d:int):
@@ -106,7 +110,7 @@ class Player(Freebody):
             body = GameState.Bodies[i]
             acc  = acc -1*GameState.G*body.mass*(1/r**2)*self.getunit(body)
         if self.thrusting:
-            acc += self.thrust()
+            acc += self.thrust(self.thrustdir)
         self.acc = acc
 
     def setnearest(self):
@@ -157,11 +161,11 @@ class Player(Freebody):
     def update(self):
         '''update the player state and location and information'''
         if not self.dead:
-            # update rotation
-            if self.rotateCCW:
-                self.rotate(1)
-            if self.rotateCW:
-                self.rotate(-1)
+            # update player orientation
+            mousepos = GameState.Camera.render2world(g.mouse.get_pos())
+            dif = mousepos-self.pos
+            self.directionvec = c, s = (dif)/np.sqrt(dif[0]**2 + dif[1]**2)
+            self.rotatematrix = np.array(((c, -s), (s, c)))
 
             # switch between orbit and free mode
             if not self.orbiting:
@@ -208,10 +212,10 @@ class Player(Freebody):
                     # if zoomed in enough, render the ship
                     # if zoomed out, draw arrow
                     # update drawing vectors
-                    tempvec = map(self.rotatematrix.dot, self.vec0)
+                    # tempvec = map(self.rotatematrix.dot, self.vec0)
 
                     # split and transform vector
-                    for i, v in enumerate(tempvec):
+                    for i, v in enumerate(map(self.rotatematrix.dot, self.vec0)):
                         self.vec[i] = tuple(GameState.Camera.world2render(0.01*self.rendersize*v + self.pos))
 
                     # draw triangle

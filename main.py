@@ -52,7 +52,7 @@ if __name__ == '__main__':
     GameState.Bodies = System1.System
     GameState.Player = Player.Player(33, 5, Colors.purple)
     # spawn a bunch of physics objects?
-    GameState.Entities = [Freebody.Freebody(r.randrange(-40, 40), r.randrange(-40, 40), Colors.red) for i in range(250)]
+    # GameState.Entities = [Freebody.Freebody(r.randrange(-40, 40), r.randrange(-40, 40), Colors.red) for i in range(250)]
 
     # timing stuff
     previous = time.time()

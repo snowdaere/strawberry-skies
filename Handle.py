@@ -50,49 +50,64 @@ def handle(event:g.event):
         
         # implement forced crash
         ### NOTE implement actual quit mechanism, remove this after that
-        if event.key == g.K_DELETE:
+        elif event.key == g.K_DELETE:
             print('Quitting')
             GameState.running = False
             g.quit()
             quit()
         
-        if event.key == g.K_q:
+        elif event.key == g.K_q:
             # toggle following mode
             GameState.Camera.Follow = True
         
-        if event.key == g.K_r:
+        elif event.key == g.K_r:
             # begin orbiting the planet
             GameState.Player.attemptorbit()
 
-        if event.key == g.K_f:
+        elif event.key == g.K_f:
             # get out of the orbit
             GameState.Player.deorbit()
         
-        if event.key == g.K_w:
-            # either way, toggle thrust
-            GameState.Player.thrusting = True
+        elif event.key == g.K_INSERT:
+            # respawn key
+            GameState.Player.respawn()
         
-        if event.key == g.K_v:
+        elif event.key == g.K_v:
             # lock and unlock selection on a planet
             GameState.Player.selectionhold = not GameState.Player.selectionhold
         
-        if event.key == g.K_INSERT:
-            # respawn key
-            GameState.Player.respawn()
-
-        # rotation doing
-        if event.key == g.K_a:
-            GameState.Player.rotateCCW = True
+        # thrust management
+        elif event.key == g.K_w:
+            # either way, toggle thrust
+            GameState.Player.thrusting = True
+            GameState.Player.thrustdir = 0
         
-        if event.key == g.K_d:
-            GameState.Player.rotateCW = True
+        elif event.key == g.K_d:
+            GameState.Player.thrusting = True
+            GameState.Player.thrustdir = 1
+        
+        elif event.key == g.K_s:
+            GameState.Player.thrusting = True
+            GameState.Player.thrustdir = 2
+
+        elif event.key == g.K_a:
+            GameState.Player.thrusting = True
+            GameState.Player.thrustdir = 3
 
     if event.type == g.KEYUP:
         if event.key == g.K_w:
+            # either way, toggle thrust
             GameState.Player.thrusting = False
-
-        if event.key == g.K_a:
-            GameState.Player.rotateCCW = False
+            GameState.Player.thrustdir = 0
         
-        if event.key == g.K_d:
-            GameState.Player.rotateCW = False
+        elif event.key == g.K_d:
+            GameState.Player.thrusting = False
+            GameState.Player.thrustdir = 0
+        
+        elif event.key == g.K_s:
+            GameState.Player.thrusting = False
+            GameState.Player.thrustdir = 0
+
+        elif event.key == g.K_a:
+            GameState.Player.thrusting = False
+            GameState.Player.thrustdir = 0
