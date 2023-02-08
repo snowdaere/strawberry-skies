@@ -14,9 +14,9 @@ class GameState:
     dt = 1/60
     # Define universal constants
     # gravitational constant
-    G = 0.1
+    G = 0.01
     # define game time
-    t = 0
+    t = 500.
 
     # initialize the game stuff
     flags = g.HWSURFACE | g.FULLSCREEN | g.DOUBLEBUF

@@ -39,8 +39,8 @@ class Sattelite(Entity):
         self.radius = math.atan(self.mass)
 
         # orbit brackets
-        self.minorbit = self.radius * 1.5
-        self.maxorbit = self.radius * 2
+        self.minorbit = self.radius * 3
+        self.maxorbit = self.radius * 5
 
 
         # position in the game world

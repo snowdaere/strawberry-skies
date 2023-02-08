@@ -39,7 +39,7 @@ class Player(Freebody):
 
         ## control information
         self.thrusting = False
-        self.thrustforce = 0.005
+        self.thrustforce = 0.0005
         self.thrustdir = 0
         self.rotateCCW = False
         self.rotateCW = False
@@ -48,7 +48,7 @@ class Player(Freebody):
         self.dtheta = 0.01* GameState.dt * np.pi/self.mass
         
         # rendering information
-        self.size = 0.01
+        self.size = 0.003
         self.rendersize = int(GameState.Camera.camzoom*(self.size))
         self.renderpos = GameState.Camera.world2render(self.pos)
         self.img = g.image.load('Assets/smolrocket.png').convert()
@@ -199,7 +199,10 @@ class Player(Freebody):
         '''render the Player and its HUD'''
         # DEFAULT IS 0.01
         # update rendersize
-        self.rendersize = 2*int(GameState.Camera.camzoom*(self.size))
+        ### NOTE i am making the arrow appear same size on every zoom level so its easier to read
+        #self.rendersize =10 2*int(GameState.Camera.camzoom*(self.size))
+        self.rendersize = 5
+
         self.renderpos = GameState.Camera.world2render(self.pos)
 
         x, y = self.renderpos

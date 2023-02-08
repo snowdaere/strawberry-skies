@@ -10,8 +10,8 @@ class Camera:
     camzoom:float = camzoomdefault
     campos = camx, camy = np.array((0, 0))
 
-    camzoommin = 0.5*0.0625*camzoomdefault
-    camzoommax = 4*camzoomdefault
+    camzoommin = 0.0625*camzoomdefault
+    camzoommax = 16*camzoomdefault
 
     # this object is used to flip the screen coordinates to a standard x/y orientation
     flip1 = np.array((1, -1))
